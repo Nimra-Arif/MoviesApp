@@ -1,53 +1,110 @@
-// MovieList.js
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, ActivityIndicator } from 'react-native';
-import { fetchMovies } from './api';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  FlatListComponent,
+} from "react-native";
+import { fetchAllMovies } from "./api";
 
-const MovieList = ({ navigation }) => {
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#00284c",
+    alignItems: "center",
+    opacity: 0.9,
+    justifyContent: "center",
+  },
+  loadingText: {
+    fontSize: 20,
+    textAlign: "center",
+    color: "#01989f",
+  },
+  movieItem: {
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+  },
+  moviePoster: {
+    width: "25%",
+    height: 100,
+    marginRight: 12,
+    resizeMode: "contain",
+    borderRadius: 8,
+  },
+  movieTitle: {
+    fontSize: 19,
+    color: "#fbe4d8",
+  },
+  textStyle: {
+    fontSize: 15,
+    color: "#01989f",
+    fontFamily: "Roboto",
+  },
+  textcontainer: {
+    display: "flex",
+    flexDirection: "column",
+    width: "75%",
+    height: 120,
+    justifyContent: "center",
+  },
+});
+
+function MainScreen({ navigation }) {
   const [movies, setMovies] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const loadMoreMovies = async () => {
-    if (loading) return;
+  useEffect(() => {
+    fetchMovies();
+  }, []);
 
-    setLoading(true);
+  const fetchMovies = async () => {
     try {
-      const newMovies = await fetchMovies(page);
-      setMovies([...movies, ...newMovies]);
-      setPage(page + 1);
-    } catch (err) {
-      setError('Error fetching movies');
-    } finally {
+      const response = await fetchAllMovies();
+      setMovies(response.data.documents);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch movies:", error);
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadMoreMovies();
-  }, []);
-
-  const renderItem = ({ item }) => (
-    <Text onPress={() => navigation.navigate('MovieDetails', { movie: item })}>
-      {item.title}
-    </Text>
-  );
-
   return (
-    <View>
-      {error && <Text>{error}</Text>}
-      <FlatList
-        data={movies}
-        keyExtractor={(item) => item._id.toString()}
-        renderItem={renderItem}
-        onEndReached={loadMoreMovies}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={loading && <ActivityIndicator size="large" />}
-      />
-   
+    <View style={styles.container}>
+      {loading ? (
+        <Text style={styles.loadingText}>Loading...</Text>
+      ) : (
+        <FlatList
+          data={movies}
+          scrollBarShown={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("MovieDetails", { movie: item })
+              }
+              style={styles.movieItem}
+            >
+              <Image source={{ uri: item.poster }} style={styles.moviePoster} />
+              <View style={styles.textcontainer}>
+                <Text style={styles.movieTitle} numberOfLines={2}>
+                  {item.title}
+                </Text>
+                <Text style={styles.textStyle}>Genres: {item.genres}</Text>
+                <Text style={styles.textStyle}>Release Year: {item.year}</Text>
+                <Text style={styles.textStyle}>Rated: {item.rated}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item._id}
+        />
+      )}
     </View>
   );
-};
+}
 
-export default MovieList;
+export default MainScreen;

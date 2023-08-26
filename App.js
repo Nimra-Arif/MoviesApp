@@ -1,20 +1,26 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import MovieList from './Components/movielist';
-import MovieDetails from './Components/moviedetails';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import MainScreen from "./Components/movielist";
+import MovieDetailsScreen from "./Components/moviedetails";
+import StarterPage from "./Components/starterpage";
 
 const Stack = createStackNavigator();
 
-const App = () => {
+function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="MovieList">
-        <Stack.Screen name="MovieList" component={MovieList} />
-        <Stack.Screen name="MovieDetails" component={MovieDetails} />
+      <Stack.Navigator initialRouteName="StarterPage">
+        <Stack.Screen
+          name="StarterPage"
+          component={StarterPage}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="MoviesList" component={MainScreen} />
+        <Stack.Screen name="MovieDetails" component={MovieDetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
+}
 
 export default App;
